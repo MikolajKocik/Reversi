@@ -21,6 +21,8 @@ namespace Reversi
     public partial class MainWindow : Window
     {
         private Button[,] plansza;
+        private ReversiSilnik silnik = new ReversiSilnik(1);
+        private SolidColorBrush[] kolory = { Brushes.Beige, Brushes.Green, Brushes.Brown };
         public MainWindow()
         {
             InitializeComponent();
@@ -40,7 +42,21 @@ namespace Reversi
                     Grid.SetRow(przycisk, j);
                     plansza[i,j] = przycisk;
                 }
-            
+            UzgodnijZawartośćPlanszy();
+            silnik.PołóżKamień(2, 4);
+            UzgodnijZawartośćPlanszy();
+        }
+
+        private void UzgodnijZawartośćPlanszy()
+        {
+            for(int i = 0; i < silnik.SzerokośćPlanszy; i++)
+            {
+                for(int j = 0; j < silnik.WysokośćPlanszy; j++)
+                {
+                    plansza[i, j].Content = silnik.PobierzStanPola(i, j).ToString();
+                    plansza[i, j].Background = kolory[silnik.PobierzStanPola(i, j)];
+                }
+            }
         }
         #region
         private void MenuItem_NowaGraDla1GraczaRozpoczynaKopmuter_Click(object sender, RoutedEventArgs e)
