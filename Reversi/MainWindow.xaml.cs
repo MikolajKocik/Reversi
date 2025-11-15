@@ -23,6 +23,11 @@ namespace Reversi
         private Button[,] plansza;
         private ReversiSilnik silnik = new ReversiSilnik(1);
         private SolidColorBrush[] kolory = { Brushes.Beige, Brushes.Green, Brushes.Brown };
+        private struct WspółrzędnePola
+        {
+            public int Poziomo, Pionowo;
+        }
+
         public MainWindow()
         {
             InitializeComponent();
@@ -40,11 +45,44 @@ namespace Reversi
                     planszaSiatka.Children.Add(przycisk);
                     Grid.SetColumn(przycisk, i);
                     Grid.SetRow(przycisk, j);
+                    przycisk.Tag = new WspółrzędnePola { Poziomo = i, Pionowo = j };
+                    przycisk.Click += new RoutedEventHandler(klikniętoPolaPlanszy); 
                     plansza[i,j] = przycisk;
                 }
             UzgodnijZawartośćPlanszy();
-            silnik.PołóżKamień(2, 4);
+            // silnik.PołóżKamień(2, 4);
             UzgodnijZawartośćPlanszy();
+            // silnik.PołóżKamień(2, 5);
+            UzgodnijZawartośćPlanszy();
+        }
+
+        private static string symbolPola(int poziomo, int pionowo)
+        {
+            if (poziomo > 25 || pionowo > 8) 
+                return "(" + poziomo.ToString() + "," + pionowo.ToString() + ")";
+            return "" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[poziomo] + "123456789"[pionowo];
+        }
+
+        private void klikniętoPolaPlanszy(object sender, RoutedEventArgs e)
+        {
+            Button klikniętyPrzycisk = sender as Button;
+            WspółrzędnePola współrzędne = (WspółrzędnePola)klikniętyPrzycisk.Tag;
+            int klikniętePoziomo = współrzędne.Poziomo;
+            int klikniętePionowo = współrzędne.Pionowo;
+            int numerGracza = silnik.NumerGraczaWykonujacegoNastepnyRuch;
+            if (silnik.PołóżKamień(klikniętePoziomo, klikniętePionowo) > 0)
+            {
+                UzgodnijZawartośćPlanszy();
+                switch (numerGracza)
+                {
+                    case 1:
+                        ListaRuchówZielony.Items.Add(symbolPola(klikniętePoziomo, klikniętePionowo));
+                        break;
+                    case 2:
+                        ListaRuchówBrązowy.Items.Add(symbolPola(klikniętePoziomo, klikniętePionowo));
+                        break;
+                }
+            };
         }
 
         private void UzgodnijZawartośćPlanszy()
@@ -57,6 +95,9 @@ namespace Reversi
                     plansza[i, j].Background = kolory[silnik.PobierzStanPola(i, j)];
                 }
             }
+            LiczbaPólZielony.Text = silnik.LiczbaPólGracz1.ToString();
+            LiczbaPólBrązowy.Text = silnik.LiczbaPólGracz2.ToString();
+            przyciskKolorGracza.Background = kolory[silnik.NumerGraczaWykonujacegoNastepnyRuch];
         }
         #region
         private void MenuItem_NowaGraDla1GraczaRozpoczynaKopmuter_Click(object sender, RoutedEventArgs e)
