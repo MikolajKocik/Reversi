@@ -64,8 +64,9 @@ namespace Reversi
             plansza[środekSzer - 1, środekWys -1] = 1;
             plansza[środekSzer, środekWys] =1;
             plansza[środekSzer, środekWys -1] = 2;
-            plansza[środekSzer - 1, środekWys] = 1;
+            plansza[środekSzer - 1, środekWys] = 2;
         }
+
         public int PobierzStanPola(int poziomo, int pionowo)
         {
             if (!czyWspółrzędnePolaPrawidłowe(poziomo, pionowo))
@@ -154,7 +155,7 @@ namespace Reversi
                         {
                             for (int indeks = 0; indeks < maxIndex; indeks++)
                             {
-                                plansza[poziomo + indeks * kierunekPoziomo, pionowo + indeks + kierunekPionomo] = NumerGraczaWykonujacegoNastepnyRuch;
+                                plansza[poziomo + indeks * kierunekPoziomo, pionowo + indeks * kierunekPionomo] = NumerGraczaWykonujacegoNastepnyRuch;
                             }
                         }
                         ilePólPrzejętych += maxIndex - 1;
