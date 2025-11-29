@@ -21,8 +21,10 @@ namespace Reversi
     public partial class MainWindow : Window
     {
         private Button[,] plansza;
-        private ReversiSilnik silnik = new ReversiSilnik(1);
+        private ReversiSilnikAI silnik = new ReversiSilnikAI(1);
         private SolidColorBrush[] kolory = { Brushes.Beige, Brushes.Green, Brushes.Brown };
+        private string[] nazwyGraczy = {"", "zielony", "brązowy" };
+        
         private struct WspółrzędnePola
         {
             public int Poziomo, Pionowo;
@@ -83,6 +85,63 @@ namespace Reversi
                         break;
                 }
             };
+
+            ReversiSilnik.SytuacjaNaPlanszy sytuacjaNaPlanszy = 
+                silnik.ZbadajSytuacjęNaPlanszy();
+
+            bool koniecGry = false;
+            switch (sytuacjaNaPlanszy)
+            {
+                case ReversiSilnik.SytuacjaNaPlanszy.WszystkiePolaPlanszySąZajęte:
+                    koniecGry = true;
+                    break;
+                case ReversiSilnik.SytuacjaNaPlanszy.BieżącyGraczNieMożeWykonaćRuchu:
+                    MessageBox.Show("Gracz " + nazwyGraczy[silnik.NumerGraczaWykonujacegoNastepnyRuch] 
+                        + " nie może wykonać ruchu");
+                    silnik.Pasuj();
+                    UzgodnijZawartośćPlanszy();
+                    break;
+                case ReversiSilnik.SytuacjaNaPlanszy.ObajGraczeNieMogąWykonaćRuchu:
+                    MessageBox.Show("Obaj gracze nie mogą wykonać ruchu");
+                    koniecGry = true;
+                    break;
+            }
+
+            if (koniecGry)
+            {
+                int numerZwycięzcy = silnik.NumerGraczaMającegoPrzewagę;
+                if (numerZwycięzcy != 0)
+                    MessageBox.Show("Wygrał gracz " + nazwyGraczy[numerZwycięzcy],
+                        Title, MessageBoxButton.OK, MessageBoxImage.Information);
+                else MessageBox.Show("Remis ", Title,
+                    MessageBoxButton.OK, MessageBoxImage.Information);
+
+                 if (MessageBox.Show("Czy rozpocząć grę od nowa?", "Reversi", MessageBoxButton.YesNo,
+                    MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
+                 {
+                    przygotowaniePlanszyDoNowejGry(1, 8, 8);
+                 }
+                 else
+                 {
+                    planszaSiatka.IsEnabled = false;
+                    przyciskKolorGracza.IsEnabled = false;
+                 }
+            }
+        }
+
+        private void przygotowaniePlanszyDoNowejGry(
+            int numerGraczaRozpoczynającego,
+            int szerokośćPlanszy = 8,
+            int wysokośćPlanszy = 8)
+        {
+            silnik = new ReversiSilnikAI(numerGraczaRozpoczynającego,
+                szerokośćPlanszy, wysokośćPlanszy);
+
+            ListaRuchówZielony.Items.Clear();
+            ListaRuchówBrązowy.Items.Clear();
+            planszaSiatka.IsEnabled = true;
+            przyciskKolorGracza.IsEnabled = true;
+            UzgodnijZawartośćPlanszy();
         }
 
         private void UzgodnijZawartośćPlanszy()

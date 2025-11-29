@@ -18,6 +18,24 @@ namespace Reversi
         public int LiczbaPólGracz1 { get { return liczbyPól[1]; } }
         public int LiczbaPólGracz2 { get { return liczbyPól[2]; } }
 
+        public int NumerGraczaMającegoPrzewagę
+        {
+            get
+            {
+                if (LiczbaPólGracz1 == LiczbaPólGracz2) return 0;
+                else if (LiczbaPólGracz1 > LiczbaPólGracz2) return 1;
+                else return 2;
+            }
+        }
+
+        public enum SytuacjaNaPlanszy
+        {
+            RuchJestMożliwy,
+            BieżącyGraczNieMożeWykonaćRuchu,
+            ObajGraczeNieMogąWykonaćRuchu,
+            WszystkiePolaPlanszySąZajęte
+        }
+
         public ReversiSilnik(int numerGraczaRozpoczynającego, int szerokośćPlanszy = 8,
             int wysokośćPlanszy = 8)
         {
@@ -65,6 +83,26 @@ namespace Reversi
             plansza[środekSzer, środekWys] =1;
             plansza[środekSzer, środekWys -1] = 2;
             plansza[środekSzer - 1, środekWys] = 2;
+        }
+
+        public SytuacjaNaPlanszy ZbadajSytuacjęNaPlanszy()
+        {
+            if (LiczbaPustychPól == 0) return SytuacjaNaPlanszy.WszystkiePolaPlanszySąZajęte;
+
+            bool czyMożliwyRuch = czyBieżącyGraczMożeWykonaćRuch();
+            if (czyMożliwyRuch) return SytuacjaNaPlanszy.RuchJestMożliwy;
+            else
+            {
+                zmieńBieżącegoGracza();
+                bool czyMożliwyRuchPrzeciwnika = czyBieżącyGraczMożeWykonaćRuch();
+                zmieńBieżącegoGracza();
+                if (czyMożliwyRuchPrzeciwnika)
+                    return SytuacjaNaPlanszy.BieżącyGraczNieMożeWykonaćRuchu;
+                else
+                {
+                    return SytuacjaNaPlanszy.ObajGraczeNieMogąWykonaćRuchu;
+                }
+            }
         }
 
         public int PobierzStanPola(int poziomo, int pionowo)
