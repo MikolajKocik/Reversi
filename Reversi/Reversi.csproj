@@ -55,6 +55,7 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="MieszanieKolorów.cs" />
     <Compile Include="ReversiSilnik.cs" />
     <Compile Include="ReversiSilnikAI.cs" />
     <Page Include="MainWindow.xaml">

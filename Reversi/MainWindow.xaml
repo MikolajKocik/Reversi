@@ -47,7 +47,7 @@
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
                 <Button x:Name="przyciskKolorGracza" Grid.Row="0" Width="30" Height="30"
-                        Margin="10,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left"/>
+                        Margin="10,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="przyciskKolorGracza_Click"/>
                 <TextBlock Grid.Row="1" Grid.Column="0" Margin="10,0,0,0" Foreground="Green" Text="Zielony: ">
                     <Run x:Name="LiczbaPólZielony" Text="0"/>
                 </TextBlock>

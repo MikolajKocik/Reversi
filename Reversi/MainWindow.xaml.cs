@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 namespace Reversi
 {
@@ -24,7 +25,9 @@ namespace Reversi
         private ReversiSilnikAI silnik = new ReversiSilnikAI(1);
         private SolidColorBrush[] kolory = { Brushes.Beige, Brushes.Green, Brushes.Brown };
         private string[] nazwyGraczy = {"", "zielony", "brązowy" };
-        
+        private bool graPrzeciwkoKomputerowi = true;
+        private DispatcherTimer tmr;
+
         private struct WspółrzędnePola
         {
             public int Poziomo, Pionowo;
@@ -56,6 +59,50 @@ namespace Reversi
             UzgodnijZawartośćPlanszy();
             // silnik.PołóżKamień(2, 5);
             UzgodnijZawartośćPlanszy();
+        }
+
+        private WspółrzędnePola? ustalNajlepszyRuch()
+        {
+            if(silnik.LiczbaPustychPól == 0)
+            {
+                MessageBox.Show("Brak wolnych pól");
+                return null;
+            }
+
+            try
+            {
+                int poziomo, pionowo;
+                silnik.ProponujNajlepszyRuch(out poziomo, out pionowo);
+                return new WspółrzędnePola() { Poziomo = poziomo, Pionowo = pionowo };
+            }
+            catch
+            {
+                MessageBox.Show("Gracze nie może wykonać ruchu");
+                return null;
+            }
+        }
+
+        private void zaznaczNajlepszyRuch()
+        {
+            WspółrzędnePola? wspPola = ustalNajlepszyRuch();
+            if(wspPola.HasValue)
+            {
+                SolidColorBrush kolorPodpowiedzi = 
+                    kolory[silnik.NumerGraczaWykonujacegoNastepnyRuch]
+                    .Lerp(kolory[0]);
+                plansza[wspPola.Value.Poziomo, wspPola.Value.Pionowo].Background
+                    = kolorPodpowiedzi;
+            }
+        }
+
+        public void wykonajNajlepszyRuch()
+        {
+            WspółrzędnePola? wspPola = ustalNajlepszyRuch();
+            if (wspPola.HasValue)
+            {
+                Button przycisk = plansza[wspPola.Value.Poziomo, wspPola.Value.Pionowo];
+                klikniętoPolaPlanszy(przycisk, null);
+            }
         }
 
         private static string symbolPola(int poziomo, int pionowo)
@@ -126,6 +173,20 @@ namespace Reversi
                     planszaSiatka.IsEnabled = false;
                     przyciskKolorGracza.IsEnabled = false;
                  }
+            }
+            else
+            {
+                if (graPrzeciwkoKomputerowi && silnik.NumerGraczaWykonujacegoNastepnyRuch == 2)
+                {
+                    if(tmr == null)
+                    {
+                        //tmr = new DispatcherTimer();
+                        //tmr.Interval = new TimeSpan(0, 0, 0, 0, 300);
+                        //tmr.Tick += (_sender, _e) =>
+                        //{ tmr.IsEnabled = false; wykonajNajlepszyRuch(); };
+                    }               
+                }
+                //wykonajNajlepszyRuch();
             }
         }
 
@@ -204,5 +265,10 @@ namespace Reversi
 
         }
         #endregion
+
+        private void przyciskKolorGracza_Click(object sender, RoutedEventArgs e)
+        {
+            zaznaczNajlepszyRuch();
+        }
     }
 }
