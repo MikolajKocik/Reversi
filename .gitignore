@@ -9,6 +9,11 @@ obj/
 *.userosscache
 *.sln.docstates
 
+# Visual Studio caches / indexes
+*.vsidx
+*.cache
+*.lref
+
 # Logs
 *.log
 
