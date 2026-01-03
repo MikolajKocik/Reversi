@@ -45,32 +45,33 @@ namespace Reversi
                         if(priorytet > 0)
                         {
                             MożliwyRuch nr = new MożliwyRuch(i, j, priorytet);
+                            // pole w rogu
                             if((i == 0 || i == SzerokośćPlanszy - 1) && (j == 0 || j== WysokośćPlanszy -1))
                             {
                                 nr.priorytet += 2 * skokPriorytetu;
                             }
-
-                            if((i==0 || i==SzerokośćPlanszy -1) && (j == 1 || j==WysokośćPlanszy-1))
+                            // pole sąsiadujące z rogiem w pionie
+                            if((i==0 || i==SzerokośćPlanszy -1) && (j == 1 || j==WysokośćPlanszy-2))
                             {
                                 nr.priorytet -= 2 * skokPriorytetu;
                             }
-
+                            // pole sąsiadujące z rogiem w poziomie
                             if((i==1 || i == SzerokośćPlanszy - 2) && (j == 0 || j == WysokośćPlanszy -1))
                             {
                                 nr.priorytet -= 2 * skokPriorytetu;
                             }
-
+                            //  pole sąsiadujące z rogiem po skosie
                             if((i == 1 || i == SzerokośćPlanszy - 2) && (j == 1 || j == WysokośćPlanszy -2))
                             {
                                 nr.priorytet -= 2 * skokPriorytetu;
                             }
-
-                            if((i == 0 || i == SzerokośćPlanszy -1) && (j == 0 || j== WysokośćPlanszy -1))
+                            // pole na brzegu
+                            if((i == 0 || i == SzerokośćPlanszy -1) || (j == 0 || j== WysokośćPlanszy -1))
                             {
                                 nr.priorytet += skokPriorytetu;
                             }
-
-                            if((i == 1 || i == SzerokośćPlanszy - 2) && (j==1 || j == WysokośćPlanszy - 2))
+                            // pole  
+                            if((i == 1 || i == SzerokośćPlanszy - 2) || (j==1 || j == WysokośćPlanszy - 2))
                             {
                                 nr.priorytet -= skokPriorytetu;
                             }

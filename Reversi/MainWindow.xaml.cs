@@ -36,36 +36,19 @@ namespace Reversi
         public MainWindow()
         {
             InitializeComponent();
-            for (int i = 0; i < 8; i++)
-                planszaSiatka.ColumnDefinitions.Add(new ColumnDefinition());
             
-            for (int i = 0; i < 8; i++)           
-                planszaSiatka.RowDefinitions.Add(new RowDefinition());
-
-            plansza = new Button[8, 8];
-            for(int i = 0;i < 8; i++)
-                for(int j=0;j<8;j++)
-                {
-                    Button przycisk = new Button();
-                    planszaSiatka.Children.Add(przycisk);
-                    Grid.SetColumn(przycisk, i);
-                    Grid.SetRow(przycisk, j);
-                    przycisk.Tag = new WspółrzędnePola { Poziomo = i, Pionowo = j };
-                    przycisk.Click += new RoutedEventHandler(klikniętoPolaPlanszy); 
-                    plansza[i,j] = przycisk;
-                }
-            UzgodnijZawartośćPlanszy();
-            // silnik.PołóżKamień(2, 4);
-            UzgodnijZawartośćPlanszy();
-            // silnik.PołóżKamień(2, 5);
-            UzgodnijZawartośćPlanszy();
+            planszaSiatka.ColumnDefinitions.Clear();
+            planszaSiatka.RowDefinitions.Clear();
+            planszaSiatka.Children.Clear();
         }
 
         private WspółrzędnePola? ustalNajlepszyRuch()
         {
+            if (!planszaSiatka.IsEnabled) return null;
+
             if(silnik.LiczbaPustychPól == 0)
             {
-                MessageBox.Show("Brak wolnych pól");
+                MessageBox.Show("Brak wolnych pól", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return null;
             }
 
@@ -77,7 +60,7 @@ namespace Reversi
             }
             catch
             {
-                MessageBox.Show("Gracze nie może wykonać ruchu");
+                MessageBox.Show("Gracze nie może wykonać ruchu", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return null;
             }
         }
@@ -107,9 +90,9 @@ namespace Reversi
 
         private static string symbolPola(int poziomo, int pionowo)
         {
-            if (poziomo > 25 || pionowo > 8) 
+            if (poziomo > 25 || pionowo > 25) 
                 return "(" + poziomo.ToString() + "," + pionowo.ToString() + ")";
-            return "" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[poziomo] + "123456789"[pionowo];
+            return "" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[poziomo] + (pionowo + 1).ToString();
         }
 
         private void klikniętoPolaPlanszy(object sender, RoutedEventArgs e)
@@ -166,7 +149,7 @@ namespace Reversi
                  if (MessageBox.Show("Czy rozpocząć grę od nowa?", "Reversi", MessageBoxButton.YesNo,
                     MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
                  {
-                    przygotowaniePlanszyDoNowejGry(1, 8, 8);
+                    przygotowaniePlanszyDoNowejGry(1, silnik.SzerokośćPlanszy, silnik.WysokośćPlanszy);
                  }
                  else
                  {
@@ -180,13 +163,15 @@ namespace Reversi
                 {
                     if(tmr == null)
                     {
-                        //tmr = new DispatcherTimer();
-                        //tmr.Interval = new TimeSpan(0, 0, 0, 0, 300);
-                        //tmr.Tick += (_sender, _e) =>
-                        //{ tmr.IsEnabled = false; wykonajNajlepszyRuch(); };
-                    }               
+                        tmr = new DispatcherTimer();
+                        tmr.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                        tmr.Tick += (_sender, _e) =>
+                        { 
+                            tmr.IsEnabled = false; wykonajNajlepszyRuch(); 
+                        };
+                    }
+                    tmr.Start();
                 }
-                //wykonajNajlepszyRuch();
             }
         }
 
@@ -195,6 +180,29 @@ namespace Reversi
             int szerokośćPlanszy = 8,
             int wysokośćPlanszy = 8)
         {
+            planszaSiatka.Children.Clear();
+            planszaSiatka.ColumnDefinitions.Clear();
+            planszaSiatka.RowDefinitions.Clear();
+
+            for (int i = 0; i < szerokośćPlanszy; i++)
+                planszaSiatka.ColumnDefinitions.Add(new ColumnDefinition());
+
+            for (int i = 0; i < wysokośćPlanszy; i++)
+                planszaSiatka.RowDefinitions.Add(new RowDefinition());
+
+            plansza = new Button[szerokośćPlanszy, wysokośćPlanszy];
+            for (int i = 0; i < szerokośćPlanszy; i++)
+                for (int j = 0; j < wysokośćPlanszy; j++)
+                {
+                    Button przycisk = new Button();
+                    planszaSiatka.Children.Add(przycisk);
+                    Grid.SetColumn(przycisk, i);
+                    Grid.SetRow(przycisk, j);
+                    przycisk.Tag = new WspółrzędnePola { Poziomo = i, Pionowo = j };
+                    przycisk.Click += new RoutedEventHandler(klikniętoPolaPlanszy);
+                    plansza[i, j] = przycisk;
+                }
+
             silnik = new ReversiSilnikAI(numerGraczaRozpoczynającego,
                 szerokośćPlanszy, wysokośćPlanszy);
 
@@ -222,53 +230,95 @@ namespace Reversi
         #region
         private void MenuItem_NowaGraDla1GraczaRozpoczynaKopmuter_Click(object sender, RoutedEventArgs e)
         {
-
+            NowaGraDialog dialog = new NowaGraDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                graPrzeciwkoKomputerowi = true;
+                Title = "Reversi - 1 gracz";
+                przygotowaniePlanszyDoNowejGry(2, dialog.BoardWidth, dialog.BoardHeight);
+                if (silnik.LiczbaPustychPól > 0)
+                {
+                    wykonajNajlepszyRuch();
+                }
+            }
         }
 
         private void MenuItem_NowaGraDla1GraczaRozpoczynaszTy_Click(object sender, RoutedEventArgs e)
         {
-
+            NowaGraDialog dialog = new NowaGraDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                graPrzeciwkoKomputerowi = true;
+                Title = "Reversi - 1 gracz";
+                przygotowaniePlanszyDoNowejGry(1, dialog.BoardWidth, dialog.BoardHeight);
+            }
         }
 
         private void MenuItem_NowaGraDla2Graczy_Click(object sender, RoutedEventArgs e)
         {
-
+            NowaGraDialog dialog = new NowaGraDialog();
+            if (dialog.ShowDialog() == true)
+            {
+                Title = "Reversi - 2 graczy";
+                graPrzeciwkoKomputerowi = false;
+                przygotowaniePlanszyDoNowejGry(1, dialog.BoardWidth, dialog.BoardHeight);
+            }
         }
 
         private void MenuItem_RuchWykonanyPrzezKomputer_Click(object sender, RoutedEventArgs e)
         {
-
+            wykonajNajlepszyRuch();
         }
 
         private void MenuItem_PodpowiedźRuchu_Click(object sender, RoutedEventArgs e)
         {
-
+            zaznaczNajlepszyRuch();
         }
 
         private void MenuItem_ZasadyGry_Click(object sender, RoutedEventArgs e)
         {
-
+            MessageBox.Show(
+                "W grze Reversi gracze zajmują na przemian pola planszy, przejmując przy tym wszystkie pola przeciwnika " +
+                    "znajdujące się między nowo zajętym polem a innymi polami gracza wykonującego ruch." +
+                " Celem gry jest zdobycie większej liczby pól niż przeciwnik.\n" +
+                "\n" +
+                "Gracz może zająć jedynie takie pole, które pozwoli mu przejąć przynajmniej jedno pole przeciwnika." +
+                " Jeżeli takiego pola nie ma, musi oddać ruch.\n" + 
+                "\n" +
+                "Gra kończy się w momencie zajęcia wszystkich pól lub gdy żaden z graczy nie może wykonać ruchu.\n",
+                        "Reversi - Zasady gry");
         }
 
         private void MenuItem_StrategiaKomputera_Click(object sender, RoutedEventArgs e)
         {
-
+            MessageBox.Show(
+                "Komputer kieruje się następującymi priorytetami(od najwyższego):\n" +
+                    "1.Ustawić pionek w rogu.\n" +
+                    "2.Unikać ustawienia pionka tuż przy rogu.\n" +
+                    "3.Ustawić pionek przy krawędzi planszy.\n" +
+                    "4.Unikać ustawienia pionka w wierszu lub kolumnie oddalonej o jedno pole krawędzi planszy.\n" +
+                    "5.Wybierz pole, w wyniku którego zdobyta zostanie największa liczba pól przeciwnika.\n",
+                        "Reversi - Strategia komputera"
+                    );
         }
 
         private void MenuItem_OProgramie_Click(object sender, RoutedEventArgs e)
         {
-
+            MessageBox.Show("Autorem programu jest Uniwersytet WSB Merito w Poznaniu," +
+                " pracę wykonał student o identyfikatorze 140518 - Mikołaj Kocik", 
+                Title, MessageBoxButton.OK);
         }
 
         private void MenuItem_Zamknij_Click(object sender, RoutedEventArgs e)
         {
-
+            Close();
         }
         #endregion
 
         private void przyciskKolorGracza_Click(object sender, RoutedEventArgs e)
         {
-            zaznaczNajlepszyRuch();
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) wykonajNajlepszyRuch();
+            else zaznaczNajlepszyRuch();
         }
     }
 }

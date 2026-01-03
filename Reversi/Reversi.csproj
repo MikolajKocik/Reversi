@@ -56,6 +56,9 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="MieszanieKolorów.cs" />
+    <Compile Include="NowaGraDialog.xaml.cs">
+      <DependentUpon>NowaGraDialog.xaml</DependentUpon>
+    </Compile>
     <Compile Include="ReversiSilnik.cs" />
     <Compile Include="ReversiSilnikAI.cs" />
     <Page Include="MainWindow.xaml">
@@ -70,6 +73,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="NowaGraDialog.xaml">
+      <Generator>MSBuild:Compile</Generator>
+      <SubType>Designer</SubType>
+    </Page>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs">
