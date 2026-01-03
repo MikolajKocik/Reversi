@@ -44,6 +44,7 @@ namespace Reversi
             plansza = new int[szerokośćPlanszy, wysokośćPlanszy];
             NumerGraczaWykonujacegoNastepnyRuch = numerGraczaRozpoczynającego;
             czyśćPlanszę();
+            obliczLiczbyPól();
         }
 
         private void obliczLiczbyPól()
