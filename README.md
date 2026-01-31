@@ -1,1 +1,1 @@
-Projekt wykonany zgodnie z wymogami uczelni (nazewnictwo w języku polskim)
+Projekt wykonany zgodnie z wymogami wykładowcy (nazewnictwo w języku polskim)
