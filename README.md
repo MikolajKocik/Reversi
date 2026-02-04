@@ -1,1 +1,1 @@
-Projekt wykonany zgodnie z wymogami wykładowcy (nazewnictwo w języku polskim)
+Reversi game project implemented using WPF (Windows Presentation Foundation)

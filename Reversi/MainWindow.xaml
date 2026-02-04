@@ -8,26 +8,26 @@
         Title="MainWindow" Height="350" Width="525" Background="LawnGreen">
     <DockPanel>
         <Menu DockPanel.Dock="Top">
-            <MenuItem Header="Gra">
-                <MenuItem Header="Nowa gra dla jednego gracza">
-                    <MenuItem Header="Rozpoczyna komputer (brązowy)" 
-                              Click="MenuItem_NowaGraDla1GraczaRozpoczynaKopmuter_Click"/>
-                    <MenuItem Header="Rozpoczynasz ty (zielony)" 
-                              Click="MenuItem_NowaGraDla1GraczaRozpoczynaszTy_Click"/>
+            <MenuItem Header="Game">
+                <MenuItem Header="New single player game">
+                    <MenuItem Header="Computer starts (brown)" 
+                              Click="MenuItem_NewGameSinglePlayerComputerStarts_Click"/>
+                    <MenuItem Header="You start (green)" 
+                              Click="MenuItem_NewGameSinglePlayerYouStart_Click"/>
                 </MenuItem>
-                <MenuItem Header="Nowa gra dla dwóch graczy" 
-                          Click="MenuItem_NowaGraDla2Graczy_Click"/>
+                <MenuItem Header="New two player game" 
+                          Click="MenuItem_NewGameTwoPlayers_Click"/>
                 <Separator/>
-                <MenuItem Header="Zamknij" Click="MenuItem_Zamknij_Click" />
+                <MenuItem Header="Exit" Click="MenuItem_Exit_Click" />
             </MenuItem>
-            <MenuItem Header="Pomoc">
-                <MenuItem Header="Podpowiedź ruchu" Click="MenuItem_PodpowiedźRuchu_Click"/>
-                <MenuItem Header="Ruch wykonany przez komputer" Click="MenuItem_RuchWykonanyPrzezKomputer_Click"/>
+            <MenuItem Header="Help">
+                <MenuItem Header="Move hint" Click="MenuItem_MoveHint_Click"/>
+                <MenuItem Header="Computer move" Click="MenuItem_ComputerMove_Click"/>
                 <Separator />
-                <MenuItem Header="Zasady gry" Click="MenuItem_ZasadyGry_Click"/>
-                <MenuItem Header="Strategia komputera" Click="MenuItem_StrategiaKomputera_Click"/>
+                <MenuItem Header="Game rules" Click="MenuItem_GameRules_Click"/>
+                <MenuItem Header="Computer strategy" Click="MenuItem_ComputerStrategy_Click"/>
                 <Separator />
-                <MenuItem Header="O programie" Click="MenuItem_OProgramie_Click"/>
+                <MenuItem Header="About" Click="MenuItem_About_Click"/>
             </MenuItem>
         </Menu>
         <Grid>
@@ -35,7 +35,7 @@
                 <ColumnDefinition Width="2*" />
                 <ColumnDefinition Width="1*" />
             </Grid.ColumnDefinitions>
-            <Grid x:Name="planszaSiatka" Grid.Column="0" Margin="10,10,10,10" Background="Beige"/>
+            <Grid x:Name="boardGrid" Grid.Column="0" Margin="10,10,10,10" Background="Beige"/>
             <Grid Grid.Column="1">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"/>
@@ -46,16 +46,16 @@
                     <RowDefinition Height="20"/>
                     <RowDefinition Height="*"/>
                 </Grid.RowDefinitions>
-                <Button x:Name="przyciskKolorGracza" Grid.Row="0" Width="30" Height="30"
-                        Margin="10,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="przyciskKolorGracza_Click"/>
-                <TextBlock Grid.Row="1" Grid.Column="0" Margin="10,0,0,0" Foreground="Green" Text="Zielony: ">
-                    <Run x:Name="LiczbaPólZielony" Text="0"/>
+                <Button x:Name="playerColorButton" Grid.Row="0" Width="30" Height="30"
+                        Margin="10,10,0,0" VerticalAlignment="Top" HorizontalAlignment="Left" Click="PlayerColorButton_Click"/>
+                <TextBlock Grid.Row="1" Grid.Column="0" Margin="10,0,0,0" Foreground="Green" Text="Green: ">
+                    <Run x:Name="GreenFieldCount" Text="0"/>
                 </TextBlock>
-                <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" Foreground="Brown" Text="Brązowy: ">
-                    <Run x:Name="LiczbaPólBrązowy" Text="0"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" Foreground="Brown" Text="Brown: ">
+                    <Run x:Name="BrownFieldCount" Text="0"/>
                 </TextBlock>
-                <ListBox x:Name="ListaRuchówZielony" Grid.Row="2" Grid.Column="0" Margin="10,0,10,10"/>
-                <ListBox x:Name="ListaRuchówBrązowy" Grid.Row="2" Grid.Column="1" Margin="10,0,10,10"/>
+                <ListBox x:Name="GreenMovesList" Grid.Row="2" Grid.Column="0" Margin="10,0,10,10"/>
+                <ListBox x:Name="BrownMovesList" Grid.Row="2" Grid.Column="1" Margin="10,0,10,10"/>
             </Grid>
         </Grid>
     </DockPanel>

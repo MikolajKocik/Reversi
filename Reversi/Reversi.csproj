@@ -55,12 +55,12 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="MieszanieKolorów.cs" />
-    <Compile Include="NowaGraDialog.xaml.cs">
-      <DependentUpon>NowaGraDialog.xaml</DependentUpon>
+    <Compile Include="ColorBlending.cs" />
+    <Compile Include="NewGameDialog.xaml.cs">
+      <DependentUpon>NewGameDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ReversiSilnik.cs" />
-    <Compile Include="ReversiSilnikAI.cs" />
+    <Compile Include="ReversiEngine.cs" />
+    <Compile Include="ReversiEngineAI.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
@@ -73,7 +73,7 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Page Include="NowaGraDialog.xaml">
+    <Page Include="NewGameDialog.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
