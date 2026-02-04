@@ -1,6 +1,6 @@
 # Reversi
 
-A classic strategy board game application built with Windows Presentation Foundation (WPF).
+A classic strategy board game application built with Windows Presentation Foundation.
 
 ## Table of Contents
 
