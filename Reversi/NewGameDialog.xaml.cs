@@ -2,12 +2,12 @@ using System.Windows;
 
 namespace Reversi
 {
-    public partial class NowaGraDialog : Window
+    public partial class NewGameDialog : Window
     {
         public int BoardWidth { get; private set; }
         public int BoardHeight { get; private set; }
 
-        public NowaGraDialog()
+        public NewGameDialog()
         {
             InitializeComponent();
         }
@@ -24,12 +24,12 @@ namespace Reversi
                 }
                 else
                 {
-                    MessageBox.Show("Szerokoœæ i wysokoœæ musz¹ byæ w zakresie od 4 do 26.", "B³êdna wartoœæ", MessageBoxButton.OK, MessageBoxImage.Error);
+                    MessageBox.Show("Width and height must be between 4 and 26.", "Invalid Value", MessageBoxButton.OK, MessageBoxImage.Error);
                 }
             }
             else
             {
-                MessageBox.Show("WprowadŸ prawid³owe liczby ca³kowite dla szerokoœci i wysokoœci.", "B³êdne dane", MessageBoxButton.OK, MessageBoxImage.Error);
+                MessageBox.Show("Enter valid integers for width and height.", "Invalid Input", MessageBoxButton.OK, MessageBoxImage.Error);
             }
         }
     }

@@ -16,309 +16,306 @@ using System.Windows.Threading;
 
 namespace Reversi
 {
-    /// <summary>
-    /// Logika interakcji dla klasy MainWindow.xaml
-    /// </summary>
     public partial class MainWindow : Window
     {
-        private Button[,] plansza;
-        private ReversiSilnikAI silnik = new ReversiSilnikAI(1);
-        private SolidColorBrush[] kolory = { Brushes.Beige, Brushes.Green, Brushes.Brown };
-        private string[] nazwyGraczy = {"", "zielony", "brązowy" };
-        private bool graPrzeciwkoKomputerowi = true;
-        private DispatcherTimer tmr;
+        private Button[,] board;
+        private ReversiEngineAI engine = new ReversiEngineAI(1);
+        private SolidColorBrush[] colors = { Brushes.Beige, Brushes.Green, Brushes.Brown };
+        private string[] playerNames = {"", "green", "brown" };
+        private bool playingAgainstComputer = true;
+        private DispatcherTimer timer;
 
-        private struct WspółrzędnePola
+        private struct FieldCoordinates
         {
-            public int Poziomo, Pionowo;
+            public int X, Y;
         }
 
         public MainWindow()
         {
             InitializeComponent();
             
-            planszaSiatka.ColumnDefinitions.Clear();
-            planszaSiatka.RowDefinitions.Clear();
-            planszaSiatka.Children.Clear();
+            boardGrid.ColumnDefinitions.Clear();
+            boardGrid.RowDefinitions.Clear();
+            boardGrid.Children.Clear();
         }
 
-        private WspółrzędnePola? ustalNajlepszyRuch()
+        private FieldCoordinates? DetermineBestMove()
         {
-            if (!planszaSiatka.IsEnabled) return null;
+            if (!boardGrid.IsEnabled) return null;
 
-            if(silnik.LiczbaPustychPól == 0)
+            if(engine.EmptyFieldCount == 0)
             {
-                MessageBox.Show("Brak wolnych pól", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("No empty fields", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return null;
             }
 
             try
             {
-                int poziomo, pionowo;
-                silnik.ProponujNajlepszyRuch(out poziomo, out pionowo);
-                return new WspółrzędnePola() { Poziomo = poziomo, Pionowo = pionowo };
+                int x, y;
+                engine.SuggestBestMove(out x, out y);
+                return new FieldCoordinates() { X = x, Y = y };
             }
             catch
             {
-                MessageBox.Show("Gracze nie może wykonać ruchu", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
+                MessageBox.Show("Player cannot make a move", Title, MessageBoxButton.OK, MessageBoxImage.Warning);
                 return null;
             }
         }
 
-        private void zaznaczNajlepszyRuch()
+        private void HighlightBestMove()
         {
-            WspółrzędnePola? wspPola = ustalNajlepszyRuch();
-            if(wspPola.HasValue)
+            FieldCoordinates? coords = DetermineBestMove();
+            if(coords.HasValue)
             {
-                SolidColorBrush kolorPodpowiedzi = 
-                    kolory[silnik.NumerGraczaWykonujacegoNastepnyRuch]
-                    .Lerp(kolory[0]);
-                plansza[wspPola.Value.Poziomo, wspPola.Value.Pionowo].Background
-                    = kolorPodpowiedzi;
+                SolidColorBrush hintColor = 
+                    colors[engine.CurrentPlayerNumber]
+                    .Lerp(colors[0]);
+                board[coords.Value.X, coords.Value.Y].Background
+                    = hintColor;
             }
         }
 
-        public void wykonajNajlepszyRuch()
+        public void ExecuteBestMove()
         {
-            WspółrzędnePola? wspPola = ustalNajlepszyRuch();
-            if (wspPola.HasValue)
+            FieldCoordinates? coords = DetermineBestMove();
+            if (coords.HasValue)
             {
-                Button przycisk = plansza[wspPola.Value.Poziomo, wspPola.Value.Pionowo];
-                klikniętoPolaPlanszy(przycisk, null);
+                Button button = board[coords.Value.X, coords.Value.Y];
+                BoardFieldClicked(button, null);
             }
         }
 
-        private static string symbolPola(int poziomo, int pionowo)
+        private static string GetFieldSymbol(int x, int y)
         {
-            if (poziomo > 25 || pionowo > 25) 
-                return "(" + poziomo.ToString() + "," + pionowo.ToString() + ")";
-            return "" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[poziomo] + (pionowo + 1).ToString();
+            if (x > 25 || y > 25) 
+                return "(" + x.ToString() + "," + y.ToString() + ")";
+            return "" + "ABCDEFGHIJKLMNOPQRSTUVWXYZ"[x] + (y + 1).ToString();
         }
 
-        private void klikniętoPolaPlanszy(object sender, RoutedEventArgs e)
+        private void BoardFieldClicked(object sender, RoutedEventArgs e)
         {
-            Button klikniętyPrzycisk = sender as Button;
-            WspółrzędnePola współrzędne = (WspółrzędnePola)klikniętyPrzycisk.Tag;
-            int klikniętePoziomo = współrzędne.Poziomo;
-            int klikniętePionowo = współrzędne.Pionowo;
-            int numerGracza = silnik.NumerGraczaWykonujacegoNastepnyRuch;
-            if (silnik.PołóżKamień(klikniętePoziomo, klikniętePionowo) > 0)
+            Button clickedButton = sender as Button;
+            FieldCoordinates coordinates = (FieldCoordinates)clickedButton.Tag;
+            int clickedX = coordinates.X;
+            int clickedY = coordinates.Y;
+            int playerNumber = engine.CurrentPlayerNumber;
+            if (engine.PlaceStone(clickedX, clickedY) > 0)
             {
-                UzgodnijZawartośćPlanszy();
-                switch (numerGracza)
+                SynchronizeBoardContent();
+                switch (playerNumber)
                 {
                     case 1:
-                        ListaRuchówZielony.Items.Add(symbolPola(klikniętePoziomo, klikniętePionowo));
+                        GreenMovesList.Items.Add(GetFieldSymbol(clickedX, clickedY));
                         break;
                     case 2:
-                        ListaRuchówBrązowy.Items.Add(symbolPola(klikniętePoziomo, klikniętePionowo));
+                        BrownMovesList.Items.Add(GetFieldSymbol(clickedX, clickedY));
                         break;
                 }
             };
 
-            ReversiSilnik.SytuacjaNaPlanszy sytuacjaNaPlanszy = 
-                silnik.ZbadajSytuacjęNaPlanszy();
+            ReversiEngine.BoardSituation boardSituation = 
+                engine.CheckBoardSituation();
 
-            bool koniecGry = false;
-            switch (sytuacjaNaPlanszy)
+            bool gameOver = false;
+            switch (boardSituation)
             {
-                case ReversiSilnik.SytuacjaNaPlanszy.WszystkiePolaPlanszySąZajęte:
-                    koniecGry = true;
+                case ReversiEngine.BoardSituation.AllFieldsOccupied:
+                    gameOver = true;
                     break;
-                case ReversiSilnik.SytuacjaNaPlanszy.BieżącyGraczNieMożeWykonaćRuchu:
-                    MessageBox.Show("Gracz " + nazwyGraczy[silnik.NumerGraczaWykonujacegoNastepnyRuch] 
-                        + " nie może wykonać ruchu");
-                    silnik.Pasuj();
-                    UzgodnijZawartośćPlanszy();
+                case ReversiEngine.BoardSituation.CurrentPlayerCannotMove:
+                    MessageBox.Show("Player " + playerNames[engine.CurrentPlayerNumber] 
+                        + " cannot make a move");
+                    engine.Pass();
+                    SynchronizeBoardContent();
                     break;
-                case ReversiSilnik.SytuacjaNaPlanszy.ObajGraczeNieMogąWykonaćRuchu:
-                    MessageBox.Show("Obaj gracze nie mogą wykonać ruchu");
-                    koniecGry = true;
+                case ReversiEngine.BoardSituation.BothPlayersCannotMove:
+                    MessageBox.Show("Neither player can make a move");
+                    gameOver = true;
                     break;
             }
 
-            if (koniecGry)
+            if (gameOver)
             {
-                int numerZwycięzcy = silnik.NumerGraczaMającegoPrzewagę;
-                if (numerZwycięzcy != 0)
-                    MessageBox.Show("Wygrał gracz " + nazwyGraczy[numerZwycięzcy],
+                int winnerNumber = engine.LeadingPlayerNumber;
+                if (winnerNumber != 0)
+                    MessageBox.Show("Player " + playerNames[winnerNumber] + " wins!",
                         Title, MessageBoxButton.OK, MessageBoxImage.Information);
-                else MessageBox.Show("Remis ", Title,
+                else MessageBox.Show("Draw!", Title,
                     MessageBoxButton.OK, MessageBoxImage.Information);
 
-                 if (MessageBox.Show("Czy rozpocząć grę od nowa?", "Reversi", MessageBoxButton.YesNo,
+                 if (MessageBox.Show("Start a new game?", "Reversi", MessageBoxButton.YesNo,
                     MessageBoxImage.Question, MessageBoxResult.Yes) == MessageBoxResult.Yes)
                  {
-                    przygotowaniePlanszyDoNowejGry(1, silnik.SzerokośćPlanszy, silnik.WysokośćPlanszy);
+                    PrepareNewGame(1, engine.BoardWidth, engine.BoardHeight);
                  }
                  else
                  {
-                    planszaSiatka.IsEnabled = false;
-                    przyciskKolorGracza.IsEnabled = false;
+                    boardGrid.IsEnabled = false;
+                    playerColorButton.IsEnabled = false;
                  }
             }
             else
             {
-                if (graPrzeciwkoKomputerowi && silnik.NumerGraczaWykonujacegoNastepnyRuch == 2)
+                if (playingAgainstComputer && engine.CurrentPlayerNumber == 2)
                 {
-                    if(tmr == null)
+                    if(timer == null)
                     {
-                        tmr = new DispatcherTimer();
-                        tmr.Interval = new TimeSpan(0, 0, 0, 0, 500);
-                        tmr.Tick += (_sender, _e) =>
+                        timer = new DispatcherTimer();
+                        timer.Interval = new TimeSpan(0, 0, 0, 0, 500);
+                        timer.Tick += (_sender, _e) =>
                         { 
-                            tmr.IsEnabled = false; wykonajNajlepszyRuch(); 
+                            timer.IsEnabled = false; ExecuteBestMove(); 
                         };
                     }
-                    tmr.Start();
+                    timer.Start();
                 }
             }
         }
 
-        private void przygotowaniePlanszyDoNowejGry(
-            int numerGraczaRozpoczynającego,
-            int szerokośćPlanszy = 8,
-            int wysokośćPlanszy = 8)
+        private void PrepareNewGame(
+            int startingPlayerNumber,
+            int boardWidth = 8,
+            int boardHeight = 8)
         {
-            planszaSiatka.Children.Clear();
-            planszaSiatka.ColumnDefinitions.Clear();
-            planszaSiatka.RowDefinitions.Clear();
+            boardGrid.Children.Clear();
+            boardGrid.ColumnDefinitions.Clear();
+            boardGrid.RowDefinitions.Clear();
 
-            for (int i = 0; i < szerokośćPlanszy; i++)
-                planszaSiatka.ColumnDefinitions.Add(new ColumnDefinition());
+            for (int i = 0; i < boardWidth; i++)
+                boardGrid.ColumnDefinitions.Add(new ColumnDefinition());
 
-            for (int i = 0; i < wysokośćPlanszy; i++)
-                planszaSiatka.RowDefinitions.Add(new RowDefinition());
+            for (int i = 0; i < boardHeight; i++)
+                boardGrid.RowDefinitions.Add(new RowDefinition());
 
-            plansza = new Button[szerokośćPlanszy, wysokośćPlanszy];
-            for (int i = 0; i < szerokośćPlanszy; i++)
-                for (int j = 0; j < wysokośćPlanszy; j++)
+            board = new Button[boardWidth, boardHeight];
+            for (int i = 0; i < boardWidth; i++)
+                for (int j = 0; j < boardHeight; j++)
                 {
-                    Button przycisk = new Button();
-                    planszaSiatka.Children.Add(przycisk);
-                    Grid.SetColumn(przycisk, i);
-                    Grid.SetRow(przycisk, j);
-                    przycisk.Tag = new WspółrzędnePola { Poziomo = i, Pionowo = j };
-                    przycisk.Click += new RoutedEventHandler(klikniętoPolaPlanszy);
-                    plansza[i, j] = przycisk;
+                    Button button = new Button();
+                    boardGrid.Children.Add(button);
+                    Grid.SetColumn(button, i);
+                    Grid.SetRow(button, j);
+                    button.Tag = new FieldCoordinates { X = i, Y = j };
+                    button.Click += new RoutedEventHandler(BoardFieldClicked);
+                    board[i, j] = button;
                 }
 
-            silnik = new ReversiSilnikAI(numerGraczaRozpoczynającego,
-                szerokośćPlanszy, wysokośćPlanszy);
+            engine = new ReversiEngineAI(startingPlayerNumber,
+                boardWidth, boardHeight);
 
-            ListaRuchówZielony.Items.Clear();
-            ListaRuchówBrązowy.Items.Clear();
-            planszaSiatka.IsEnabled = true;
-            przyciskKolorGracza.IsEnabled = true;
-            UzgodnijZawartośćPlanszy();
+            GreenMovesList.Items.Clear();
+            BrownMovesList.Items.Clear();
+            boardGrid.IsEnabled = true;
+            playerColorButton.IsEnabled = true;
+            SynchronizeBoardContent();
         }
 
-        private void UzgodnijZawartośćPlanszy()
+        private void SynchronizeBoardContent()
         {
-            for(int i = 0; i < silnik.SzerokośćPlanszy; i++)
+            for(int i = 0; i < engine.BoardWidth; i++)
             {
-                for(int j = 0; j < silnik.WysokośćPlanszy; j++)
+                for(int j = 0; j < engine.BoardHeight; j++)
                 {
-                    plansza[i, j].Content = silnik.PobierzStanPola(i, j).ToString();
-                    plansza[i, j].Background = kolory[silnik.PobierzStanPola(i, j)];
+                    board[i, j].Content = engine.GetFieldState(i, j).ToString();
+                    board[i, j].Background = colors[engine.GetFieldState(i, j)];
                 }
             }
-            LiczbaPólZielony.Text = silnik.LiczbaPólGracz1.ToString();
-            LiczbaPólBrązowy.Text = silnik.LiczbaPólGracz2.ToString();
-            przyciskKolorGracza.Background = kolory[silnik.NumerGraczaWykonujacegoNastepnyRuch];
+            GreenFieldCount.Text = engine.Player1FieldCount.ToString();
+            BrownFieldCount.Text = engine.Player2FieldCount.ToString();
+            playerColorButton.Background = colors[engine.CurrentPlayerNumber];
         }
         #region
-        private void MenuItem_NowaGraDla1GraczaRozpoczynaKopmuter_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_NewGameSinglePlayerComputerStarts_Click(object sender, RoutedEventArgs e)
         {
-            NowaGraDialog dialog = new NowaGraDialog();
+            NewGameDialog dialog = new NewGameDialog();
             if (dialog.ShowDialog() == true)
             {
-                graPrzeciwkoKomputerowi = true;
-                Title = "Reversi - 1 gracz";
-                przygotowaniePlanszyDoNowejGry(2, dialog.BoardWidth, dialog.BoardHeight);
-                if (silnik.LiczbaPustychPól > 0)
+                playingAgainstComputer = true;
+                Title = "Reversi - 1 player";
+                PrepareNewGame(2, dialog.BoardWidth, dialog.BoardHeight);
+                if (engine.EmptyFieldCount > 0)
                 {
-                    wykonajNajlepszyRuch();
+                    ExecuteBestMove();
                 }
             }
         }
 
-        private void MenuItem_NowaGraDla1GraczaRozpoczynaszTy_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_NewGameSinglePlayerYouStart_Click(object sender, RoutedEventArgs e)
         {
-            NowaGraDialog dialog = new NowaGraDialog();
+            NewGameDialog dialog = new NewGameDialog();
             if (dialog.ShowDialog() == true)
             {
-                graPrzeciwkoKomputerowi = true;
-                Title = "Reversi - 1 gracz";
-                przygotowaniePlanszyDoNowejGry(1, dialog.BoardWidth, dialog.BoardHeight);
+                playingAgainstComputer = true;
+                Title = "Reversi - 1 player";
+                PrepareNewGame(1, dialog.BoardWidth, dialog.BoardHeight);
             }
         }
 
-        private void MenuItem_NowaGraDla2Graczy_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_NewGameTwoPlayers_Click(object sender, RoutedEventArgs e)
         {
-            NowaGraDialog dialog = new NowaGraDialog();
+            NewGameDialog dialog = new NewGameDialog();
             if (dialog.ShowDialog() == true)
             {
-                Title = "Reversi - 2 graczy";
-                graPrzeciwkoKomputerowi = false;
-                przygotowaniePlanszyDoNowejGry(1, dialog.BoardWidth, dialog.BoardHeight);
+                Title = "Reversi - 2 players";
+                playingAgainstComputer = false;
+                PrepareNewGame(1, dialog.BoardWidth, dialog.BoardHeight);
             }
         }
 
-        private void MenuItem_RuchWykonanyPrzezKomputer_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_ComputerMove_Click(object sender, RoutedEventArgs e)
         {
-            wykonajNajlepszyRuch();
+            ExecuteBestMove();
         }
 
-        private void MenuItem_PodpowiedźRuchu_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_MoveHint_Click(object sender, RoutedEventArgs e)
         {
-            zaznaczNajlepszyRuch();
+            HighlightBestMove();
         }
 
-        private void MenuItem_ZasadyGry_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_GameRules_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "W grze Reversi gracze zajmują na przemian pola planszy, przejmując przy tym wszystkie pola przeciwnika " +
-                    "znajdujące się między nowo zajętym polem a innymi polami gracza wykonującego ruch." +
-                " Celem gry jest zdobycie większej liczby pól niż przeciwnik.\n" +
+                "In Reversi, players take turns occupying fields on the board, capturing all opponent's pieces " +
+                    "that lie between the newly placed piece and other pieces of the player making the move." +
+                " The goal is to capture more fields than your opponent.\n" +
                 "\n" +
-                "Gracz może zająć jedynie takie pole, które pozwoli mu przejąć przynajmniej jedno pole przeciwnika." +
-                " Jeżeli takiego pola nie ma, musi oddać ruch.\n" + 
+                "A player can only place a piece on a field that allows capturing at least one opponent's piece." +
+                " If no such field exists, the player must pass their turn.\n" + 
                 "\n" +
-                "Gra kończy się w momencie zajęcia wszystkich pól lub gdy żaden z graczy nie może wykonać ruchu.\n",
-                        "Reversi - Zasady gry");
+                "The game ends when all fields are occupied or when neither player can make a move.\n",
+                        "Reversi - Game Rules");
         }
 
-        private void MenuItem_StrategiaKomputera_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_ComputerStrategy_Click(object sender, RoutedEventArgs e)
         {
             MessageBox.Show(
-                "Komputer kieruje się następującymi priorytetami(od najwyższego):\n" +
-                    "1.Ustawić pionek w rogu.\n" +
-                    "2.Unikać ustawienia pionka tuż przy rogu.\n" +
-                    "3.Ustawić pionek przy krawędzi planszy.\n" +
-                    "4.Unikać ustawienia pionka w wierszu lub kolumnie oddalonej o jedno pole krawędzi planszy.\n" +
-                    "5.Wybierz pole, w wyniku którego zdobyta zostanie największa liczba pól przeciwnika.\n",
-                        "Reversi - Strategia komputera"
+                "The computer follows these priorities (from highest):\n" +
+                    "1. Place a piece in a corner.\n" +
+                    "2. Avoid placing a piece next to a corner.\n" +
+                    "3. Place a piece on the edge of the board.\n" +
+                    "4. Avoid placing a piece in a row or column one field away from the edge.\n" +
+                    "5. Choose the field that captures the most opponent's pieces.\n",
+                        "Reversi - Computer Strategy"
                     );
         }
 
-        private void MenuItem_OProgramie_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_About_Click(object sender, RoutedEventArgs e)
         {
-            MessageBox.Show("Autorem programu jest Uniwersytet WSB Merito w Poznaniu," +
-                " pracę wykonał student o identyfikatorze 140518 - Mikołaj Kocik", 
+            MessageBox.Show("This program was created at WSB Merito University in Poznan," +
+                " completed by student ID 140518 - Mikolaj Kocik", 
                 Title, MessageBoxButton.OK);
         }
 
-        private void MenuItem_Zamknij_Click(object sender, RoutedEventArgs e)
+        private void MenuItem_Exit_Click(object sender, RoutedEventArgs e)
         {
             Close();
         }
         #endregion
 
-        private void przyciskKolorGracza_Click(object sender, RoutedEventArgs e)
+        private void PlayerColorButton_Click(object sender, RoutedEventArgs e)
         {
-            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) wykonajNajlepszyRuch();
-            else zaznaczNajlepszyRuch();
+            if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) ExecuteBestMove();
+            else HighlightBestMove();
         }
     }
 }
