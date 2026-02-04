@@ -183,7 +183,3 @@ The AI evaluates all possible moves and assigns priority scores based on:
 - Debug and Release configurations available
 - Target platform: AnyCPU (compatible with x86 and x64 systems)
 - Output type: Windows executable (WinExe)
-
-## Author
-
-This application was developed at WSB Merito University in Poznań by student Mikolaj Kocik (ID: 140518).
